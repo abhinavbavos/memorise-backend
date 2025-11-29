@@ -30,10 +30,18 @@ app.set("trust proxy", 1);
 app.use(helmet());
 app.use(
   cors({
-    origin: ["https://72.61.228.4", "http://72.61.228.4"],
-    credentials: true
+    origin: [
+      "http://72.61.228.4.nip.io",
+      "https://72.61.228.4.nip.io"
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   })
 );
+
+app.options("*", cors());
+
 
 
 app.use(express.json({ limit: "2mb" }));
