@@ -6,7 +6,6 @@ import PlanLimits from "../models/PlanLimits.js";
 import Joi from "joi";
 import mongoose from "mongoose";
 
-
 // --- helpers ---
 async function decoratePosts(rows, { includeFileUrl = false } = {}) {
   // small batch signing; page sizes are small in UI
@@ -44,12 +43,10 @@ export async function presignPostFile(req, res) {
   }
 
   const key = `user-uploads/${req.user.id}/posts/${uuidv4()}`;
-  const url = await getPresignedPutURL({ key, contentType }); // IMPORTANT: await
-  // optional: tell client which headers to include (SSE)
-  const requiredHeaders =
-    process.env.REQUIRE_SSE === "true"
-      ? { "x-amz-server-side-encryption": "AES256" }
-      : {};
+  const { url, requiredHeaders } = await getPresignedPutURL({
+    key,
+    contentType,
+  });
   res.json({ key, url, requiredHeaders });
 }
 

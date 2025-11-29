@@ -119,12 +119,12 @@ export async function presignAvatar(req, res) {
     return res.status(400).json({ error: "Avatar too large (max 5MB)" });
 
   const key = `user-uploads/${req.user.id}/avatar-${uuidv4()}`;
-  const url = await getPresignedPutURL({ key, contentType, expires: 60 });
-  res.json({
+  const { url, requiredHeaders } = await getPresignedPutURL({
     key,
-    url,
-    requiredHeaders: { "x-amz-server-side-encryption": "AES256" },
+    contentType,
+    expires: 60,
   });
+  res.json({ key, url, requiredHeaders });
 }
 
 /** POST /api/users/me/avatar */
@@ -153,12 +153,12 @@ export async function presignCover(req, res) {
     return res.status(400).json({ error: "Cover too large (max 8MB)" });
 
   const key = `user-uploads/${req.user.id}/cover-${uuidv4()}`;
-  const url = await getPresignedPutURL({ key, contentType, expires: 60 });
-  res.json({
+  const { url, requiredHeaders } = await getPresignedPutURL({
     key,
-    url,
-    requiredHeaders: { "x-amz-server-side-encryption": "AES256" },
+    contentType,
+    expires: 60,
   });
+  res.json({ key, url, requiredHeaders });
 }
 
 /** POST /api/users/me/cover */

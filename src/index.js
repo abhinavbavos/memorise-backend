@@ -31,18 +31,17 @@ app.use(helmet());
 app.use(
   cors({
     origin: [
+      "http://localhost:5173",
       "http://72.61.228.4.nip.io",
-      "https://72.61.228.4.nip.io"
+      "https://72.61.228.4.nip.io",
     ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 app.options("*", cors());
-
-
 
 app.use(express.json({ limit: "2mb" }));
 app.use(mongoSanitize());
