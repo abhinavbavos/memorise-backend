@@ -34,6 +34,10 @@ export async function login(req, res) {
   if (error) return res.status(400).json({ error: error.message });
   const user = await User.findOne({ email: value.email });
   if (!user || !(await user.checkPassword(value.password))) return res.status(401).json({ error: 'Invalid credentials' });
+  
+  if (user.status !== 'active') {
+    return res.status(403).json({ error: `Your account is ${user.status}` });
+  }
   const tokens = signTokens(user);
   res.json({ user: { id: user._id, publicId: user.publicId, name: user.name, email: user.email, plan: user.plan }, ...tokens });
 }

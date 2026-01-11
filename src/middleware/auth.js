@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
+import User from '../models/User.js';
 
 export function auth(required = true) {
-  return (req, res, next) => {
+  return async (req, res, next) => {
     const header = req.headers.authorization || '';
     const token = header.startsWith('Bearer ') ? header.slice(7) : null;
     if (!token) {
@@ -10,7 +11,16 @@ export function auth(required = true) {
     }
     try {
       const payload = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = { id: payload.sub, role: payload.role, plan: payload.plan };
+      
+      // Check if user exists and is active
+      const user = await User.findById(payload.sub).select('status role plan');
+      if (!user) return res.status(401).json({ error: 'User no longer exists' });
+      
+      if (user.status !== 'active') {
+        return res.status(403).json({ error: `Your account is ${user.status}` });
+      }
+
+      req.user = { id: user._id, role: user.role, plan: user.plan };
       next();
     } catch (e) {
       return res.status(401).json({ error: 'Invalid token' });
