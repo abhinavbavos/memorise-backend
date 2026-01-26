@@ -20,11 +20,14 @@ const trophySchema = Joi.object({
   category: Joi.string()
     .valid(...CATEGORY_ENUM)
     .required(),
-  year: Joi.string()
-    .pattern(/^\d{4}$/)
-    .allow("")
+  year: Joi.alternatives()
+    .try(
+      Joi.string().pattern(/^\d{4}$/),
+      Joi.number().integer().min(1000).max(9999)
+    )
+    .allow("", null)
     .optional(),
-  imageKey: Joi.string().allow("").optional(),
+  imageKey: Joi.string().allow("", null).optional(),
 });
 
 async function signKeyOrNull(key) {
@@ -116,16 +119,25 @@ export async function listMine(req, res) {
  * - Creates an explicit trophy.
  */
 export async function createTrophy(req, res) {
-  const { error, value } = trophySchema.validate(req.body);
-  if (error) return res.status(400).json({ error: error.message });
+  try {
+    // console.log("Create trophy payload:", req.body);
+    const { error, value } = trophySchema.validate(req.body);
+    if (error) {
+      console.error("Trophy validation error:", error.message);
+      return res.status(400).json({ error: error.message });
+    }
 
-  const doc = await Trophy.create({ userId: req.user.id, ...value });
-  const out = {
-    ...doc.toObject(),
-    id: doc._id?.toString?.(),
-    imageUrl: await signKeyOrNull(doc.imageKey),
-  };
-  res.status(201).json(out);
+    const doc = await Trophy.create({ userId: req.user.id, ...value });
+    const out = {
+      ...doc.toObject(),
+      id: doc._id?.toString?.(),
+      imageUrl: await signKeyOrNull(doc.imageKey),
+    };
+    res.status(201).json(out);
+  } catch (err) {
+    console.error("Create trophy error:", err);
+    res.status(500).json({ error: "Failed to create trophy" });
+  }
 }
 
 /**

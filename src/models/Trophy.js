@@ -11,7 +11,7 @@ const trophySchema = new mongoose.Schema(
     title: { type: String, required: true },
     category: {
       type: String,
-      enum: ["Awards", "Certificates", "Academics", "Sports", "Internship"],
+      enum: ["Awards", "Certificates", "Academics", "Sports", "Internship", "Others"],
       required: true,
       index: true,
     },
