@@ -32,6 +32,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "http://localhost:5174",
+      "https://memorisehub.com",
+      "https://www.memorisehub.com",
       "http://72.61.228.4.nip.io",
       "https://72.61.228.4.nip.io",
     ],
