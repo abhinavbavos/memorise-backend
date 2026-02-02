@@ -28,6 +28,14 @@ app.set("trust proxy", 1);
 
 // Security & core middleware
 app.use(helmet());
+app.use((req, res, next) => {
+  console.log("Incoming Origin:", req.headers.origin);
+  console.log("Request Method:", req.method);
+  console.log("Request Path:", req.path);
+  console.log("Request IP:", req.ip);
+  console.log("X-Forwarded-For:", req.headers["x-forwarded-for"]);
+  next();
+});
 app.use(
   cors({
     origin: [
