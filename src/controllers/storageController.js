@@ -39,9 +39,12 @@ export async function uploadFile(req, res) {
     fs.mkdirSync(dir, { recursive: true });
   }
 
+  console.log(`[Storage] Uploading file to: ${filePath}`);
+
   try {
     const writeStream = fs.createWriteStream(filePath);
     await pipeline(req, writeStream);
+    console.log(`[Storage] Successfully saved: ${filePath}`);
     res.json({ ok: true, key });
   } catch (err) {
     console.error("Upload failed:", err);
