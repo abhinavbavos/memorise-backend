@@ -37,23 +37,26 @@ app.use((req, res, next) => {
   console.log("X-Forwarded-For:", req.headers["x-forwarded-for"]);
   next();
 });
-app.use(
-  cors({
-    origin: [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "https://memorisehub.com",
-      "https://www.memorisehub.com",
-      "http://72.61.228.4.nip.io",
-      "https://72.61.228.4.nip.io",
-    ],
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "x-amz-server-side-encryption"],
-  })
-);
+const corsOptions = {
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://memorisehub.com",
+    "https://www.memorisehub.com",
+    "http://72.61.228.4.nip.io",
+    "https://72.61.228.4.nip.io",
+  ],
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "x-amz-server-side-encryption",
+  ],
+};
 
-app.options("*", cors());
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(express.json({ limit: "2mb" }));
 app.use(mongoSanitize());
