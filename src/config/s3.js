@@ -5,6 +5,9 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import jwt from "jsonwebtoken";
+
+const isLocal = process.env.STORAGE_TYPE === "local";
 
 const s3Client = new S3Client({
   region: process.env.S3_REGION,
@@ -18,8 +21,32 @@ const s3Client = new S3Client({
 const REQUIRE_SSE =
   String(process.env.REQUIRE_SSE ?? "true").toLowerCase() === "true";
 
+function getLocalSignedUrl(type, key, expires) {
+  // expires is in seconds for S3, jwt.sign uses seconds if it is a number
+  const token = jwt.sign({ type, key }, process.env.JWT_SECRET, {
+    expiresIn: expires,
+  });
+  
+  const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 4060}`;
+  
+  if (type === "put") {
+    return `${baseUrl}/api/storage/upload?key=${encodeURIComponent(key)}&token=${token}`;
+  } else {
+    return `${baseUrl}/api/storage/file/${key}?token=${token}`; // key in path for GET
+  }
+}
+
 // Generate a presigned PUT URL + the headers the client MUST send
 export async function getPresignedPutURL({ key, contentType, expires = 60 }) {
+  if (isLocal) {
+    const url = getLocalSignedUrl("put", key, expires);
+    return { 
+      url, 
+      key, 
+      requiredHeaders: { "Content-Type": contentType || "application/octet-stream" } 
+    };
+  }
+
   const cmd = new PutObjectCommand({
     Bucket: process.env.S3_BUCKET,
     Key: key,
@@ -42,6 +69,10 @@ export async function getPresignedGetURL({
   expires = 300,
   asDownloadName,
 }) {
+  if (isLocal) {
+    return getLocalSignedUrl("get", key, expires);
+  }
+
   const params = { Bucket: process.env.S3_BUCKET, Key: key };
   if (asDownloadName) {
     params.ResponseContentDisposition = `attachment; filename="${asDownloadName}"`;

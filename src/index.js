@@ -19,6 +19,7 @@ import adminRoutes from "./routes/admin.js";
 import billingRoutes from "./routes/billing.js";
 import fileRoutes from "./routes/files.js";
 import metaRoutes from "./routes/meta.js";
+import storageRoutes from "./routes/storage.js";
 
 const app = express();
 const PORT = process.env.PORT || 4060;
@@ -77,6 +78,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/billing", billingRoutes);
 app.use("/api/files", fileRoutes);
+app.use("/api/storage", storageRoutes);
 
 // 404 + error handler
 app.use((_req, res) => res.status(404).json({ error: "Not found" }));
