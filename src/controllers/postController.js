@@ -1,7 +1,7 @@
 // controllers/postController.js
 import Post from "../models/Post.js";
 import { v4 as uuidv4 } from "uuid";
-import { getPresignedPutURL, getPresignedGetURL } from "../config/s3.js";
+import { getPresignedPutURL, getPresignedGetURL } from "../config/storage.js";
 import PlanLimits from "../models/PlanLimits.js";
 import Joi from "joi";
 import mongoose from "mongoose";

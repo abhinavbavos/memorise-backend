@@ -1,36 +1,21 @@
 import "dotenv/config";
 import mongoose from "mongoose";
 import sharp from "sharp";
-import {
-  S3Client,
-  GetObjectCommand,
-  PutObjectCommand,
-  HeadObjectCommand,
-} from "@aws-sdk/client-s3";
+import fs from "fs";
+import path from "path";
 import Post from "../models/Post.js";
 
 // ---------- Config ----------
-const BUCKET = process.env.S3_BUCKET;
-const REGION = process.env.S3_REGION;
-const REQUIRE_SSE = String(process.env.REQUIRE_SSE).toLowerCase() === "true";
+const UPLOAD_ROOT = path.join(process.cwd(), "uploads");
 const BATCH = Number(process.env.THUMB_BATCH || 10);
 const DELAY_MS = Number(process.env.THUMB_DELAY_MS || 3000);
 const MAX_ATTEMPTS = Number(process.env.THUMB_MAX_ATTEMPTS || 5);
 const MAX_EDGE = Number(process.env.THUMB_MAX_EDGE || 640);
 
-if (!BUCKET || !REGION) {
-  console.error("[thumbWorker] Missing S3_BUCKET / S3_REGION env vars");
-  process.exit(1);
+// Ensure upload root exists
+if (!fs.existsSync(UPLOAD_ROOT)) {
+  fs.mkdirSync(UPLOAD_ROOT, { recursive: true });
 }
-
-// ---------- AWS S3 ----------
-const s3 = new S3Client({
-  region: REGION,
-  credentials: {
-    accessKeyId: process.env.S3_ACCESS_KEY,
-    secretAccessKey: process.env.S3_SECRET_KEY,
-  },
-});
 
 // ---------- Helpers ----------
 function deriveThumbKey(fileKey) {
@@ -38,30 +23,28 @@ function deriveThumbKey(fileKey) {
   return fileKey.replace(/\.[^.]+$/, "_thumb.jpg");
 }
 
-async function s3ObjectExists(key) {
+function getLocalPath(key) {
+  return path.join(UPLOAD_ROOT, key);
+}
+
+async function objectExists(key) {
   try {
-    await s3.send(new HeadObjectCommand({ Bucket: BUCKET, Key: key }));
+    await fs.promises.access(getLocalPath(key));
     return true;
   } catch {
     return false;
   }
 }
 
-async function downloadBuffer(key) {
-  const obj = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: key }));
-  const bytes = await obj.Body.transformToByteArray();
-  return Buffer.from(bytes);
+async function readFileBuffer(key) {
+  return fs.promises.readFile(getLocalPath(key));
 }
 
-async function uploadJpeg(key, buffer) {
-  const params = {
-    Bucket: BUCKET,
-    Key: key,
-    Body: buffer,
-    ContentType: "image/jpeg",
-    ...(REQUIRE_SSE ? { ServerSideEncryption: "AES256" } : {}),
-  };
-  await s3.send(new PutObjectCommand(params));
+async function saveFile(key, buffer) {
+  const fullPath = getLocalPath(key);
+  const dir = path.dirname(fullPath);
+  await fs.promises.mkdir(dir, { recursive: true });
+  await fs.promises.writeFile(fullPath, buffer);
 }
 
 // ---------- Core ----------
@@ -69,8 +52,8 @@ async function processOne(p) {
   const { _id, fileKey, fileMime } = p;
   const thumbKey = deriveThumbKey(fileKey);
 
-  // Idempotence: if thumb already in S3, just mark done
-  if (await s3ObjectExists(thumbKey)) {
+  // Idempotence: if thumb already exists, just mark done
+  if (await objectExists(thumbKey)) {
     await Post.updateOne(
       { _id },
       { thumbKey, thumbPending: false, thumbError: "" }
@@ -84,8 +67,18 @@ async function processOne(p) {
     return { id: _id, status: "skipped-nonimage" };
   }
 
+  // If source file doesn't exist locally, we can't make a thumb
+  if (!(await objectExists(fileKey))) {
+    // Fail silently or log error? If file is missing, we can't resize.
+    // Maybe verify if it's on S3? But we differ to local only now.
+    // Let's mark as error.
+    const msg = "Source file missing local";
+    await Post.updateOne({ _id }, { thumbError: msg, thumbPending: false });
+    return { id: _id, status: "error", error: msg };
+  }
+
   try {
-    const input = await downloadBuffer(fileKey);
+    const input = await readFileBuffer(fileKey);
     const out = await sharp(input)
       .rotate()
       .resize({
@@ -97,7 +90,7 @@ async function processOne(p) {
       .jpeg({ quality: 80 })
       .toBuffer();
 
-    await uploadJpeg(thumbKey, out);
+    await saveFile(thumbKey, out);
     await Post.updateOne(
       { _id },
       { thumbKey, thumbPending: false, thumbError: "", thumbAttempts: 0 }
@@ -135,7 +128,7 @@ async function main() {
   const uri = process.env.MONGO_URI;
   if (!uri) throw new Error("MONGO_URI missing");
   await mongoose.connect(uri);
-  console.log("[thumbWorker] Mongo connected");
+  console.log("[thumbWorker] Mongo connected (Local Storage Mode)");
 
   while (!shuttingDown) {
     const res = await loopOnce();

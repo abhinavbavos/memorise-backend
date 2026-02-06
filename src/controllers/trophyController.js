@@ -3,7 +3,7 @@ import Joi from "joi";
 import mongoose from "mongoose";
 import Trophy from "../models/Trophy.js";
 import Post from "../models/Post.js";
-import { getPresignedGetURL } from "../config/s3.js";
+import { getPresignedGetURL } from "../config/storage.js";
 
 // Keep categories aligned with your Post model
 const CATEGORY_ENUM = [

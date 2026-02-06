@@ -1,5 +1,5 @@
 // controllers/fileController.js
-import { getPresignedGetURL } from "../config/s3.js";
+import { getPresignedGetURL } from "../config/storage.js";
 
 export async function signGet(req, res) {
   const { key, expires } = req.query;

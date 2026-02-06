@@ -8,7 +8,7 @@ import Report from "../models/Report.js";
 import Payment from "../models/Payment.js";
 import Setting from "../models/Setting.js";
 import AuditLog from "../models/AuditLog.js";
-import { getPresignedGetURL } from "../config/s3.js";
+import { getPresignedGetURL } from "../config/storage.js";
 
 /* =========================================================
  * DASHBOARD

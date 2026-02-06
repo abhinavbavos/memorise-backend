@@ -3,7 +3,7 @@ import User from "../models/User.js";
 import { v4 as uuidv4 } from "uuid";
 import Joi from "joi";
 import mongoose from "mongoose";
-import { getPresignedPutURL, getPresignedGetURL } from "../config/s3.js";
+import { getPresignedPutURL, getPresignedGetURL } from "../config/storage.js";
 
 // ---------- helpers ----------
 const ALLOWED_IMAGE_MIME = [

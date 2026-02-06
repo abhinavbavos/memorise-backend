@@ -1,5 +1,4 @@
-// services/s3SignedGet.js
-import { getPresignedGetURL } from "../config/s3.js";
+import { getPresignedGetURL } from "../config/storage.js";
 
 /**
  * Return a short-lived signed GET URL for an S3 object.
