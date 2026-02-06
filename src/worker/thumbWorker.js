@@ -91,6 +91,7 @@ async function processOne(p) {
       .toBuffer();
 
     await saveFile(thumbKey, out);
+    console.log(`[thumbWorker] Created thumb at: ${getLocalPath(thumbKey)}`);
     await Post.updateOne(
       { _id },
       { thumbKey, thumbPending: false, thumbError: "", thumbAttempts: 0 }

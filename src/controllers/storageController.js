@@ -45,7 +45,7 @@ export async function uploadFile(req, res) {
     const writeStream = fs.createWriteStream(filePath);
     await pipeline(req, writeStream);
     console.log(`[Storage] Successfully saved: ${filePath}`);
-    res.json({ ok: true, key });
+    res.json({ ok: true, key, savedTo: filePath });
   } catch (err) {
     console.error("Upload failed:", err);
     res.status(500).json({ error: "Upload failed" });
