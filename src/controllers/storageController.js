@@ -7,7 +7,11 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const UPLOAD_DIR = path.join(__dirname, "../../uploads");
+
+// Allow external override for "Safe Mode" (outside project root)
+const UPLOAD_DIR = process.env.UPLOAD_PATH 
+  ? path.resolve(process.env.UPLOAD_PATH) 
+  : path.join(__dirname, "../../uploads");
 
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {

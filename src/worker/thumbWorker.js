@@ -10,7 +10,11 @@ import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const UPLOAD_ROOT = path.join(__dirname, "../../uploads");
+
+// Allow external override for "Safe Mode"
+const UPLOAD_ROOT = process.env.UPLOAD_PATH
+  ? path.resolve(process.env.UPLOAD_PATH)
+  : path.join(__dirname, "../../uploads");
 const BATCH = Number(process.env.THUMB_BATCH || 10);
 const DELAY_MS = Number(process.env.THUMB_DELAY_MS || 3000);
 const MAX_ATTEMPTS = Number(process.env.THUMB_MAX_ATTEMPTS || 5);
