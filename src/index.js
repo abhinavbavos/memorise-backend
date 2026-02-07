@@ -28,7 +28,11 @@ const PORT = process.env.PORT || 4060;
 app.set("trust proxy", 1);
 
 // Security & core middleware
-app.use(helmet());
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
 app.use((req, res, next) => {
   console.log("Incoming Origin:", req.headers.origin);
   console.log("Request Method:", req.method);
