@@ -3,7 +3,11 @@ import path from "path";
 import jwt from "jsonwebtoken";
 import { pipeline } from "stream/promises";
 
-const UPLOAD_DIR = path.join(process.cwd(), "uploads");
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const UPLOAD_DIR = path.join(__dirname, "../../uploads");
 
 // Ensure upload directory exists
 if (!fs.existsSync(UPLOAD_DIR)) {
