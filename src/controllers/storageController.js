@@ -90,6 +90,7 @@ export async function getFile(req, res) {
   }
 
   if (!fs.existsSync(filePath)) {
+    console.log(`[Storage] 404 Not Found. Checked: ${filePath}`);
     return res.status(404).json({ error: "File not found" });
   }
 
