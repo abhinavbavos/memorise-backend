@@ -17,9 +17,12 @@ function getLocalSignedUrl(type, key, expires, options = {}) {
     // PUT still needs a token for security (uploading)
     return `${baseUrl}/api/storage/upload?key=${encodeURIComponent(key)}&token=${token}`;
   } else {
-    // GET: Serve directly via Nginx (fast, public)
-    // Map "user-uploads/..." to "https://api.memorisehub.com/uploads/user-uploads/..."
-    return `${baseUrl}/uploads/${key}`;
+    // GET: Serve via Node.js (Simpler, no Nginx config needed)
+    let url = `${baseUrl}/api/storage/file/${key}?token=${token}`;
+    if (options.responseContentType) {
+      url += `&responseContentType=${encodeURIComponent(options.responseContentType)}`;
+    }
+    return url;
   }
 }
 
