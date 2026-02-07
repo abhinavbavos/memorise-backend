@@ -5,7 +5,7 @@ import jwt from "jsonwebtoken";
 const REQUIRE_SSE =
   String(process.env.REQUIRE_SSE ?? "true").toLowerCase() === "true";
 
-function getLocalSignedUrl(type, key, expires) {
+function getLocalSignedUrl(type, key, expires, options = {}) {
   // expires is in seconds
   const token = jwt.sign({ type, key }, process.env.JWT_SECRET, {
     expiresIn: expires,
@@ -16,8 +16,12 @@ function getLocalSignedUrl(type, key, expires) {
   if (type === "put") {
     return `${baseUrl}/api/storage/upload?key=${encodeURIComponent(key)}&token=${token}`;
   } else {
-    // For GET, we return a URL that serves the file
-    return `${baseUrl}/api/storage/file/${key}?token=${token}`;
+    // GET
+    let url = `${baseUrl}/api/storage/file/${key}?token=${token}`;
+    if (options.responseContentType) {
+      url += `&responseContentType=${encodeURIComponent(options.responseContentType)}`;
+    }
+    return url;
   }
 }
 
@@ -33,10 +37,10 @@ export async function getPresignedPutURL({ key, contentType, expires = 60 }) {
 
 export async function getPresignedGetURL({
   key,
-  expires = 300,
-  asDownloadName,
+  expires = 3600,
+  responseContentType,
 }) {
-  return getLocalSignedUrl("get", key, expires);
+  return getLocalSignedUrl("get", key, expires, { responseContentType });
 }
 
 export { getPresignedGetURL as getSignedGetURL };

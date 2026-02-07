@@ -17,7 +17,7 @@ async function decoratePosts(rows, { includeFileUrl = false } = {}) {
 
     const fileUrl =
       includeFileUrl && p.fileKey
-        ? await getPresignedGetURL({ key: p.fileKey, expires: 3600 })
+        ? await getPresignedGetURL({ key: p.fileKey, expires: 3600, responseContentType: p.fileMime })
         : undefined;
 
     out.push({
@@ -120,7 +120,7 @@ export async function listPostsByUser(req, res) {
         thumbUrl = await getPresignedGetURL({ key: p.thumbKey, expires: 3600 });
       } else if (p.fileMime && p.fileMime.startsWith("image/")) {
         // no thumb yet? fall back to the original image
-        thumbUrl = await getPresignedGetURL({ key: p.fileKey, expires: 3600 });
+        thumbUrl = await getPresignedGetURL({ key: p.fileKey, expires: 3600, responseContentType: p.fileMime });
       }
 
       return {

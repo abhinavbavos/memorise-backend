@@ -93,5 +93,9 @@ export async function getFile(req, res) {
     return res.status(404).json({ error: "File not found" });
   }
 
+  if (req.query.responseContentType) {
+    res.setHeader("Content-Type", req.query.responseContentType);
+  }
+
   res.sendFile(filePath);
 }
