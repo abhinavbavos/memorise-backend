@@ -65,7 +65,19 @@ app.use(compression());
 if (process.env.NODE_ENV !== "production") app.use(morgan("dev"));
 
 app.use(
-  rateLimit({ windowMs: 15 * 60 * 1000, max: 200, standardHeaders: true })
+  rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    skip: (req) => {
+      // Allow unlimited access to images/files and metadata
+      return (
+        req.path.startsWith("/api/storage/") ||
+        req.path.startsWith("/api/files/") ||
+        req.path.startsWith("/api/meta/")
+      );
+    },
+  })
 );
 
 // Health

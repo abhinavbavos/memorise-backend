@@ -14,14 +14,12 @@ function getLocalSignedUrl(type, key, expires, options = {}) {
   const baseUrl = process.env.APP_URL || `http://localhost:${process.env.PORT || 4060}`;
   
   if (type === "put") {
+    // PUT still needs a token for security (uploading)
     return `${baseUrl}/api/storage/upload?key=${encodeURIComponent(key)}&token=${token}`;
   } else {
-    // GET
-    let url = `${baseUrl}/api/storage/file/${key}?token=${token}`;
-    if (options.responseContentType) {
-      url += `&responseContentType=${encodeURIComponent(options.responseContentType)}`;
-    }
-    return url;
+    // GET: Serve directly via Nginx (fast, public)
+    // Map "user-uploads/..." to "https://api.memorisehub.com/uploads/user-uploads/..."
+    return `${baseUrl}/uploads/${key}`;
   }
 }
 
