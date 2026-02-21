@@ -52,23 +52,23 @@ export async function presignPostFile(req, res) {
 
 export async function createPost(req, res) {
   const schema = Joi.object({
-    title: Joi.string().required(),
-    description: Joi.string().allow("").required(),
+    title: Joi.string().allow("").optional(),
+    description: Joi.string().allow("").optional(),
     category: Joi.string()
       .valid("Awards", "Certificates", "Academics", "Sports", "Internship")
       .required(),
-    fileKey: Joi.string().required(),
+    fileKey: Joi.string().optional(),
     fileMime: Joi.string()
       .valid("image/jpeg", "image/jpg", "image/png", "application/pdf")
-      .required(),
-    fileSize: Joi.number().required(),
+      .optional(),
+    fileSize: Joi.number().optional(),
   });
 
   const { error, value } = schema.validate(req.body);
   if (error) return res.status(400).json({ error: error.message });
 
   // mark that a thumb is expected when it’s an image
-  const isImage = value.fileMime.startsWith("image/");
+  const isImage = value.fileMime && value.fileMime.startsWith("image/");
   const doc = await Post.create({
     userId: req.user.id,
     ...value,

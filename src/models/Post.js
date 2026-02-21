@@ -9,8 +9,8 @@ const postSchema = new mongoose.Schema(
       index: true,
       required: true,
     },
-    title: { type: String, required: true },
-    description: { type: String, required: true },
+    title: { type: String },
+    description: { type: String, default: "" },
 
     // Lock to your predefined set
     category: {
@@ -20,10 +20,9 @@ const postSchema = new mongoose.Schema(
     },
 
     // S3 object details
-    fileKey: { type: String, required: true },
+    fileKey: { type: String },
     fileMime: {
       type: String,
-      required: true,
       enum: [
         "image/jpeg",
         "image/jpg",
@@ -32,7 +31,7 @@ const postSchema = new mongoose.Schema(
         "application/pdf",
       ],
     },
-    fileSize: { type: Number, required: true },
+    fileSize: { type: Number },
 
     // Thumbnails
     thumbKey: String,
